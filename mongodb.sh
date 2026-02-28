@@ -27,13 +27,13 @@ VALIDATE(){
 cp mongo.repo /etc/yum.repos.d/mongo.repo
 VALIDATE $? "Coping mango repo"
 
-dnf install mongodb -y &>> $LOG_FILE
+dnf install mongod -y &>> $LOG_FILE
 VALIDATE $? "Installing mongodb"
 
-systemctl enable mongod 
+systemctl enable mongod &>> $LOG_FILE
 VALIDATE $? "Enable mongo db"
 
-systemctl start mongodb
+systemctl start mongodb &>> $LOG_FILE
 VALIDATE $? "Start mongodb"
 
 sed -i 's/127.0.0.1/0.0.0.0/g' /etc/mongodb.conf
