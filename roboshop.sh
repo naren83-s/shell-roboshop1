@@ -2,66 +2,62 @@
 
 SG_ID="sg-06836c5944ba0ff00"
 AMI_ID="ami-0220d79f3f480ecf5"
-HOST_ZONE_ID="Z0354649BHBBW98BVSKE"
+ZONE_ID="Z0354649BHBBW98BVSKE"
 DOMAIN_NAME="naren83.online"
 
 for instance in $@
 do
-INSTANCE_ID=$(aws ec2 run-instances \
+    INSTANCE_ID=$( aws ec2 run-instances \
     --image-id $AMI_ID \
-    --instance-type t3.micro \
+    --instance-type "t3.micro" \
     --security-group-ids $SG_ID \
     --tag-specifications "ResourceType=instance,Tags=[{Key=Name,Value=$instance}]" \
     --query 'Instances[0].InstanceId' \
-    --output text)
+    --output text )
 
-echo "Launched Instance ID: $INSTANCE_ID"
-
-  if [ $instance == "frontend" ]; then
-    IP=$(
-        aws ec2 describe-instances \
+    if [ $instance == "frontend" ]; then
+        IP=$(
+            aws ec2 describe-instances \
             --instance-ids $INSTANCE_ID \
             --query 'Reservations[].Instances[].PublicIpAddress' \
             --output text
         )
-        RECORD_NAME="$DOMAIN_NAME"
-  else
-    IP=$(
-        aws ec2 describe-instances \
+        RECORD_NAME="$DOMAIN_NAME" # daws88s.online
+    else
+        IP=$(
+            aws ec2 describe-instances \
             --instance-ids $INSTANCE_ID \
-            --query 'Reservations[].Instances[].PriateIpAddress' \
+            --query 'Reservations[].Instances[].PrivateIpAddress' \
             --output text
         )
-        RECORD_NAME="$instance.$DOMAIN_NAME"
-  fi
+        RECORD_NAME="$instance.$DOMAIN_NAME" # mongodb.daws88s.online
+    fi
 
-  echo "IP Adress: $IP"
+    echo "IP Address: $IP"
 
-  aws route53 change-resource-record-sets \
-  --hosted-zone-id $HOST_ZONE_ID \
-  --change-batch '
+    aws route53 change-resource-record-sets \
+    --hosted-zone-id $ZONE_ID \
+    --change-batch '
+    {
+        "Comment": "Updating record",
+        "Changes": [
+            {
+            "Action": "UPSERT",
+            "ResourceRecordSet": {
+                "Name": "'$RECORD_NAME'",
+                "Type": "A",
+                "TTL": 1,
+                "ResourceRecords": [
+                {
+                    "Value": "'$IP'"
+                }
+                ]
+            }
+            }
+        ]
+    }
+    '
 
-       {
-         "Comment": "Update A record for test.example.com",
-         "Changes": [
-          {
-             "Action": "UPSERT",
-             "ResourceRecordSet": {
-             "Name": "'$RECORD_NAME'",
-             "Type": "A",
-             "TTL": 1,
-             "ResourceRecords": [
-              {
-               "Value": "'$IP'"
-              }
-              ]
-             }
-           }
-           ]
-        }
-        '
-    echo="record updated for $instance"
-
-
+    echo "record updated for $instance"
 
 done
