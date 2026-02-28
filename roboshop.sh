@@ -60,7 +60,7 @@ echo "Launched Instance ID: $INSTANCE_ID"
            ]
         }
         '
-    echo="record updated for $instance
+    echo="record updated for $instance"
 
 
 
