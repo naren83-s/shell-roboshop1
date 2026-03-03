@@ -1,7 +1,7 @@
 #!/bin/bash
 
 USERID=$(id -u)
-LOGS_FOLDER="var/log/shell-roboshop1"
+LOGS_FOLDER="/var/log/shell-roboshop1"
 LOGS_FILE="$LOGS_FOLDER/$0.log"
 R="\e[31m"
 G="\e[32m"
@@ -26,7 +26,7 @@ VALIDATE(){
     fi
 }
 
-cp $SCRIPT_DIR/rabbitmq.repo/etc/yum.repos.d/rabbitmq.repo
+cp $SCRIPT_DIR/rabbitmq.repo /etc/yum.repos.d/rabbitmq.repo
 VALIDATE $? "Validate Rabbitmq repo"
 
 dnf install rabbitmq-server -y &>> $LOGS_FILE
